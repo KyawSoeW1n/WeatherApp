@@ -1,53 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
 
-    <EditText
-        android:id="@+id/etCityName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <Button
-        android:id="@+id/btnSearch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="searchByCity"
-        android:layout_below="@+id/etCityName"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="8dp"
-        android:text="@string/app_name" />
-
-    <TextView
-        android:id="@+id/tvCityName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/btnSearch"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="8dp"
-        android:text="@string/app_name" />
-
     <ImageView
-        android:id="@+id/ivImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/tvTemperature"
-        android:layout_alignStart="@+id/tvTemperature"
-        android:layout_alignEnd="@+id/tvTemperature"
-        android:src="@drawable/ic_launcher_background" />
+        android:id="@+id/imv_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY" />
 
-    <TextView
-        android:id="@+id/tvTemperature"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="@string/app_name"
-        android:textSize="32sp" />
 
-</RelativeLayout>
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swpRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingStart="@dimen/spacing_normal"
+            android:paddingTop="@dimen/spacing_huge"
+            android:paddingEnd="@dimen/spacing_normal"
+            android:paddingBottom="@dimen/spacing_normal">
+
+
+            <EditText
+                android:id="@+id/etCityName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@+id/imvSearch"
+                android:background="@drawable/border"
+                android:hint="@string/enter_city_name"
+                android:textColor="@android:color/white"
+                android:textColorHint="@android:color/white" />
+
+            <ImageView
+                android:id="@+id/imvSearch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/etCityName"
+                android:layout_alignParentEnd="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginStart="@dimen/spacing_normal"
+                android:layout_marginTop="@dimen/spacing_normal"
+                android:onClick="searchByCity"
+                android:src="@android:drawable/ic_menu_search"
+                android:text="@string/app_name" />
+
+            <TextView
+                android:id="@+id/tvCityName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/imvSearch"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="@dimen/spacing_normal"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/textSize_huge"
+                tools:text="@string/app_name" />
+
+            <Switch
+                android:id="@+id/swTemperature"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/imvSearch"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="@dimen/spacing_normal"
+                android:checked="true"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/textSize_huge"
+                tools:text="@string/app_name" />
+
+            <ImageView
+                android:id="@+id/ivImage"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_above="@+id/tvTemperature"
+                android:layout_alignStart="@+id/tvTemperature"
+                android:layout_alignEnd="@+id/tvTemperature"
+                android:scaleType="fitCenter" />
+
+            <TextView
+                android:id="@+id/tvTemperature"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerInParent="true"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/textSize_extra_huge"
+                android:textStyle="bold"
+                tools:text="@string/app_name" />
+
+            <TextView
+                android:id="@+id/tvHumidity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/tvHumidityValue"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="@dimen/spacing_normal"
+                android:layout_marginEnd="@dimen/spacing_normal"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                android:text="@string/humidity"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/textSize_normal" />
+
+            <TextView
+                android:id="@+id/tvHumidityValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginEnd="@dimen/spacing_normal"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/textSize_large"
+                tools:text="@string/humidity" />
+
+            <TextView
+                android:id="@+id/tvWind"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/tvWindValue"
+                android:layout_alignParentStart="true"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                android:text="@string/wind"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/textSize_normal" />
+
+            <TextView
+                android:id="@+id/tvWindValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/textSize_large"
+                tools:text="@string/wind" />
+        </RelativeLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</FrameLayout>

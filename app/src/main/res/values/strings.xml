@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">WeatherApp</string>
+    <string name="setting">Setting</string>
+    <string name="about">About</string>
+    <string name="celsius">%1s °C</string>
+    <string name="fahrenheit">%1s °F</string>
+    <string name="wind">Wind</string>
+    <string name="wind_speed">%1s m/s</string>
+    <string name="humidity">Humidity</string>
+    <string name="enter_city_name">Enter City Name</string>
 </resources>
