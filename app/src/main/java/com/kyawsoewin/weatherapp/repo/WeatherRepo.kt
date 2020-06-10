@@ -18,9 +18,11 @@ open class WeatherRepository(
         } catch (e: Exception) {
             responseHandler.handleException(e)
         }
-    }suspend fun getWeatherByLocation(latitude: String,longitude : String): Resource<WeatherResponse> {
+    }
+
+    suspend fun getWeatherByLocation(latitude: String,longitude : String): Resource<WeatherResponse> {
         return try {
-            val response = weatherApi.getByCoordinate(latitude,longitude, "metric")
+            val response = weatherApi.getByLocation(latitude,longitude, "metric")
             return responseHandler.handleSuccess(response)
         } catch (e: Exception) {
             responseHandler.handleException(e)

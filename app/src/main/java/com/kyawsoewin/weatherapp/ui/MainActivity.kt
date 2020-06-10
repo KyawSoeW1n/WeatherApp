@@ -158,7 +158,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
     }
 
     private fun setUpObserver() {
-//        mainViewModel.weatherByLocation.observe(this, locationObserver)
+        mainViewModel.weatherByLocation.observe(this, locationObserver)
         mainViewModel.weatherByCity.observe(this, cityObserver)
     }
 
