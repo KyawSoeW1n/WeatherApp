@@ -8,15 +8,15 @@ import retrofit2.http.Query
 
 interface WeatherApiService : IInterface {
     @GET("weather/")
-    fun getByCoordinate(
+    suspend fun getByLocation(
         @Query("lat") lat: String,
         @Query("lon") lon: String,
         @Query("units") unit: String
-    ): Call<WeatherResponse>
+    ): WeatherResponse
 
     @GET("weather/")
-    fun getByCity(
+    suspend fun getByCity(
         @Query("q") cityName: String,
         @Query("units") unit: String
-    ): Call<WeatherResponse>
+    ): WeatherResponse
 }

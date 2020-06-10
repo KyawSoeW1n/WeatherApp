@@ -5,10 +5,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.location.LocationManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.karumi.dexter.Dexter
@@ -18,15 +18,19 @@ import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.kyawsoewin.weatherapp.Constants
 import com.kyawsoewin.weatherapp.R
-import com.kyawsoewin.weatherapp.network.RetrofitInstanceFactory
+import com.kyawsoewin.weatherapp.network.Resource
+import com.kyawsoewin.weatherapp.network.Status
 import com.kyawsoewin.weatherapp.network.response.WeatherResponse
 import com.kyawsoewin.weatherapp.utils.CommonUtils
-import retrofit2.Call
-import retrofit2.Response
+import com.kyawsoewin.weatherapp.viewmodel.MainViewModel
+import kotlinx.android.synthetic.main.activity_main.*
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
     CompoundButton.OnCheckedChangeListener {
+
+    private val mainViewModel: MainViewModel by viewModel()
 
     private var temperature: String = "metric"
     private val tvTemp by lazy {
@@ -63,110 +67,63 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
         findViewById<ImageView>(R.id.ivImage)
     }
 
-    private val apiService by lazy {
-        RetrofitInstanceFactory.newApiServiceInstance()
+    private val cityObserver = Observer<Resource<WeatherResponse>> {
+        when (it.status) {
+
+            Status.SUCCESS -> showData(
+                it.data!!.name,
+                it.data.main.temp,
+                it.data.weatherList.getOrNull(0)?.weatherMain ?: "",
+                it.data.weatherList.getOrNull(0)?.icon ?: "",
+                it.data.wind.speed,
+                it.data.main.humidity
+            )
+            Status.ERROR -> showError(it.message!!)
+            Status.LOADING -> showLoading()
+        }
+    }
+
+    private val locationObserver = Observer<Resource<WeatherResponse>> {
+        when (it.status) {
+
+            Status.SUCCESS -> showData(
+                it.data!!.name,
+                it.data.main.temp,
+                it.data.weatherList.getOrNull(0)?.weatherMain ?: "",
+                it.data.weatherList.getOrNull(0)?.icon ?: "",
+                it.data.wind.speed,
+                it.data.main.humidity
+            )
+            Status.ERROR -> showError(it.message!!)
+            Status.LOADING -> showLoading()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        RetrofitInstanceFactory.newRetrofitInstance()
         requestPermission()
         setUpListener()
+        setUpObserver()
     }
 
-    private fun setUpListener() {
-        swpRefresh.setOnRefreshListener(this)
-        swTemperature.setOnCheckedChangeListener(this)
-    }
-
-    private fun executeNetworkCall(latitude: String, longitude: String) {
+    private fun showLoading() {
         swpRefresh.isRefreshing = true
-        apiService!!.getByCoordinate(latitude, longitude, temperature)
-            .enqueue(object : retrofit2.Callback<WeatherResponse> {
-                override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                    t.printStackTrace()
-                    showError()
-                }
-
-                override fun onResponse(
-                    call: Call<WeatherResponse>,
-                    response: Response<WeatherResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        response.body()?.let { weatherResponse ->
-                            val icon = weatherResponse.weatherList.getOrNull(0)?.icon ?: ""
-                            val main = weatherResponse.weatherList.getOrNull(0)?.weatherMain ?: ""
-                            showData(
-                                weatherResponse.main.temp,
-                                weatherResponse.name,
-                                "https://openweathermap.org/img/wn/$icon@2x.png",
-                                weatherResponse.main.humidity,
-                                weatherResponse.wind.speed,
-                                main
-                            )
-                        }
-                    } else {
-                        showError()
-                    }
-                }
-
-            })
-
     }
 
-    private fun executeNetworkCall(cityName: String) {
-        swpRefresh.isRefreshing = true
-        apiService!!.getByCity(cityName, "metric")
-            .enqueue(object : retrofit2.Callback<WeatherResponse> {
-                override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                    t.printStackTrace()
-                    showError()
-                }
-
-                override fun onResponse(
-                    call: Call<WeatherResponse>,
-                    response: Response<WeatherResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        response.body()?.let { weatherResponse ->
-                            val icon = weatherResponse.weatherList.getOrNull(0)?.icon ?: ""
-                            val main = weatherResponse.weatherList.getOrNull(0)?.weatherMain ?: ""
-                            showData(
-                                weatherResponse.main.temp,
-                                weatherResponse.name,
-                                "https://openweathermap.org/img/wn/$icon@2x.png",
-                                weatherResponse.main.humidity,
-                                weatherResponse.wind.speed,
-                                main
-                            )
-                        }
-                    } else {
-                        showError()
-                    }
-                }
-
-            })
-
-    }
-
-    private fun showError() {
-        if (swpRefresh.isRefreshing)
-            swpRefresh.isRefreshing = false
-        Toast.makeText(this, "Something Went Wrong", Toast.LENGTH_SHORT).show()
+    private fun dismissLoading() {
+        swpRefresh.isRefreshing = false
     }
 
     private fun showData(
-        temp: String,
         name: String,
+        temp: String,
+        weatherMain: String,
         icon: String,
-        humidity: String,
         windSpeed: String,
-        weatherMain: String
+        humidity: String
     ) {
-        if (swpRefresh.isRefreshing) {
-            swpRefresh.isRefreshing = false
-        }
+        dismissLoading()
         tvCity.text = name
         tvTemp.text = getString(R.string.celsius, temp)
         tvHumidityValue.text = humidity
@@ -200,6 +157,22 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
         Glide.with(this).load(icon).into(imgImage)
     }
 
+    private fun setUpObserver() {
+//        mainViewModel.weatherByLocation.observe(this, locationObserver)
+        mainViewModel.weatherByCity.observe(this, cityObserver)
+    }
+
+    private fun setUpListener() {
+        swpRefresh.setOnRefreshListener(this)
+        swTemperature.setOnCheckedChangeListener(this)
+    }
+
+    private fun showError(message: String) {
+        dismissLoading()
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+
     private fun requestPermission() {
         Dexter.withContext(this)
             .withPermissions(
@@ -227,44 +200,42 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
             this@MainActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val location =
             locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-        if (location != null) {
-            executeNetworkCall(
-                location.latitude.toString(),
-                location.longitude.toString()
-            )
-        } else {
-            Log.e("Location", "Null")
-        }
+
+        mainViewModel.getByLocation(location.latitude.toString(),location.longitude.toString())
     }
 
     fun searchByCity(v: View) {
         if (etCityName.text.toString().isNotEmpty()) {
-            executeNetworkCall(etCityName.text.toString())
             etCityName.clearFocus()
+            mainViewModel.getByCity(etCityName.text.toString())
             CommonUtils.newInstance(this)
         } else
             Toast.makeText(this, " Enter City Name", Toast.LENGTH_SHORT).show()
     }
 
     override fun onRefresh() {
-
+        if (etCityName.text.toString().isEmpty()) {
+            getLocation()
+        } else {
+            mainViewModel.getByCity(etCityName.text.toString())
+        }
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
-        if (isChecked) {
-            temperature = "metric"
-            if (etCityName.text.toString().isEmpty()) {
-                getLocation()
-            } else {
-                executeNetworkCall(etCityName.text.toString())
-            }
-        } else {
-            temperature = "imperial"
-            if (etCityName.text.toString().isEmpty()) {
-                getLocation()
-            } else {
-                executeNetworkCall(etCityName.text.toString())
-            }
-        }
+//        if (isChecked) {
+//            temperature = "metric"
+//            if (etCityName.text.toString().isEmpty()) {
+//                getLocation()
+//            } else {
+//                executeNetworkCall(etCityName.text.toString())
+//            }
+//        } else {
+//            temperature = "imperial"
+//            if (etCityName.text.toString().isEmpty()) {
+//                getLocation()
+//            } else {
+//                executeNetworkCall(etCityName.text.toString())
+//            }
+//        }
     }
 }
