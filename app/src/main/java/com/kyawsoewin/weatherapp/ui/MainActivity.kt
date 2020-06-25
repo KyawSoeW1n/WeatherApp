@@ -22,17 +22,17 @@ import com.kyawsoewin.weatherapp.network.Resource
 import com.kyawsoewin.weatherapp.network.Status
 import com.kyawsoewin.weatherapp.network.response.WeatherResponse
 import com.kyawsoewin.weatherapp.utils.CommonUtils
+import com.kyawsoewin.weatherapp.utils.PreferenceManager
 import com.kyawsoewin.weatherapp.viewmodel.MainViewModel
-import kotlinx.android.synthetic.main.activity_main.*
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
-
 
 class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
     CompoundButton.OnCheckedChangeListener {
 
     private val mainViewModel: MainViewModel by viewModel()
+    private val preferenceManager: PreferenceManager by inject()
 
-    private var temperature: String = "metric"
     private val tvTemp by lazy {
         findViewById<TextView>(R.id.tvTemperature)
     }
@@ -69,7 +69,6 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
 
     private val cityObserver = Observer<Resource<WeatherResponse>> {
         when (it.status) {
-
             Status.SUCCESS -> showData(
                 it.data!!.name,
                 it.data.main.temp,
@@ -105,6 +104,11 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
         requestPermission()
         setUpListener()
         setUpObserver()
+        checkUnit()
+    }
+
+    private fun checkUnit() {
+        swTemperature.isChecked = preferenceManager.getPreferenceString(Constants.PREF_TYPE).equals(Constants.METRIC)
     }
 
     private fun showLoading() {
@@ -201,7 +205,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
         val location =
             locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
 
-        mainViewModel.getByLocation(location.latitude.toString(),location.longitude.toString())
+        mainViewModel.getByLocation(location.latitude.toString(), location.longitude.toString())
     }
 
     fun searchByCity(v: View) {
@@ -222,20 +226,11 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
-//        if (isChecked) {
-//            temperature = "metric"
-//            if (etCityName.text.toString().isEmpty()) {
-//                getLocation()
-//            } else {
-//                executeNetworkCall(etCityName.text.toString())
-//            }
-//        } else {
-//            temperature = "imperial"
-//            if (etCityName.text.toString().isEmpty()) {
-//                getLocation()
-//            } else {
-//                executeNetworkCall(etCityName.text.toString())
-//            }
-//        }
+        if (isChecked) {
+            preferenceManager.putPreferenceString(Constants.PREF_TYPE, Constants.METRIC)
+        } else {
+            preferenceManager.putPreferenceString(Constants.PREF_TYPE, Constants.IMPERIAL)
+        }
+        onRefresh()
     }
 }

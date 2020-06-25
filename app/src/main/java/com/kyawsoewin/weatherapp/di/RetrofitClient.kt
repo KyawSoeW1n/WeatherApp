@@ -11,11 +11,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 val networkModule = module {
-    factory { AppInterceptor() }
+    single { AppInterceptor() }
     factory { provideOkHttpClient(get(), get()) }
-    factory { provideWeatherApi(get()) }
-    factory { provideLoggingInterceptor() }
-    factory { ResponseHandler()  }
+    single { provideWeatherApi(get()) }
+    single { provideLoggingInterceptor() }
+    factory { ResponseHandler() }
     single { provideRetrofit(get()) }
 }
 

@@ -1,6 +1,9 @@
 package com.kyawsoewin.weatherapp.viewmodel
 
-import androidx.lifecycle.*
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
 import com.kyawsoewin.weatherapp.network.Location
 import com.kyawsoewin.weatherapp.network.Resource
 import com.kyawsoewin.weatherapp.repo.WeatherRepository
@@ -21,17 +24,15 @@ class MainViewModel(
 
     fun getByLocation(latitude: String, longitude: String) {
         val location = Location(latitude, longitude)
-        locationLiveData.value= location
+        locationLiveData.value = location
     }
 
-    var weatherByLocation = locationLiveData.switchMap {
-        location ->
-        liveData (Dispatchers.IO){
+    var weatherByLocation = locationLiveData.switchMap { location ->
+        liveData(Dispatchers.IO) {
             emit(Resource.loading(null))
-            emit(weatherRepo.getWeatherByLocation(location.latitude,location.longitude))
+            emit(weatherRepo.getWeatherByLocation(location.latitude, location.longitude))
         }
     }
-
 
     var weatherByCity = cityLiveData.switchMap { city ->
         liveData(Dispatchers.IO) {

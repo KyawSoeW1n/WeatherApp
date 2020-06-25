@@ -18,5 +18,9 @@ class Constants {
             "https://i.pinimg.com/originals/f8/a2/37/f8a2377a5beb6f32f10445c7df75e635.jpg";
         const val DEFAULT_BACKGROUND =
             "https://cdn.clipart.email/834405b11b42a54c5850426239c1f971_weather-clipart-background_774-1032.jpeg";
+        const val PREF_NAME = "weather_app"
+        const val PREF_TYPE = "type"
+        const val IMPERIAL = "imperial"
+        const val METRIC = "metric"
     }
 }
